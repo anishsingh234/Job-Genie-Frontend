@@ -11,6 +11,11 @@ interface ReportViewProps {
 }
 
 export function ReportView({ report }: ReportViewProps) {
+  const strengths = report.strengths ?? [];
+  const improvements = report.improvements ?? [];
+  const perQuestion = report.per_question ?? [];
+  const learningResources = report.learning_resources ?? [];
+
   return (
     <div className="space-y-8 stagger">
       {/* Overall Score */}
@@ -47,7 +52,7 @@ export function ReportView({ report }: ReportViewProps) {
             Strengths
           </h4>
           <ul className="space-y-2.5">
-            {report.strengths.map((s, i) => (
+            {strengths.map((s, i) => (
               <li key={i} className="flex items-start gap-2.5 text-sm text-text-secondary">
                 <span className="mt-1 w-1.5 h-1.5 rounded-full bg-accent shrink-0" />
                 {s}
@@ -64,7 +69,7 @@ export function ReportView({ report }: ReportViewProps) {
             Areas for Improvement
           </h4>
           <ul className="space-y-2.5">
-            {report.improvements.map((s, i) => (
+            {improvements.map((s, i) => (
               <li key={i} className="flex items-start gap-2.5 text-sm text-text-secondary">
                 <span className="mt-1 w-1.5 h-1.5 rounded-full bg-accent-warm shrink-0" />
                 {s}
@@ -80,7 +85,7 @@ export function ReportView({ report }: ReportViewProps) {
           Question Breakdown
         </h4>
         <div className="space-y-6">
-          {report.per_question.map((q, i) => (
+          {perQuestion.map((q, i) => (
             <div key={i} className="space-y-3 pb-6 border-b border-border-subtle last:border-0 last:pb-0">
               <div className="flex items-start justify-between gap-4">
                 <p className="text-sm font-medium text-text-primary flex-1">
@@ -96,13 +101,13 @@ export function ReportView({ report }: ReportViewProps) {
       </Card>
 
       {/* Learning Resources */}
-      {report.learning_resources.length > 0 && (
+      {learningResources.length > 0 && (
         <Card>
           <h4 className="text-sm font-heading font-semibold text-text-primary mb-4">
             📚 Recommended Resources
           </h4>
           <div className="space-y-3">
-            {report.learning_resources.map((r, i) => (
+            {learningResources.map((r, i) => (
               <a
                 key={i}
                 href={r.url}

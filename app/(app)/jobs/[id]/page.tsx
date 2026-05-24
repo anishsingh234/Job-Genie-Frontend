@@ -80,6 +80,12 @@ export default function JobDetailPage({
     return <div className="text-center py-20 text-text-secondary">Job not found.</div>;
   }
 
+  const requiredSkills = job.required_skills ?? [];
+  const matchResults = matches ?? [];
+  const gapMatched = gap?.matched ?? [];
+  const gapMissing = gap?.missing ?? [];
+  const gapExtra = gap?.extra ?? [];
+
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       <SectionHeader title={job.title} subtitle={job.company} />
@@ -100,7 +106,7 @@ export default function JobDetailPage({
               Required Skills
             </h3>
             <div className="flex flex-wrap gap-2">
-              {job.required_skills.map((s) => (
+              {requiredSkills.map((s) => (
                 <Badge key={s} variant="primary" size="md">{s}</Badge>
               ))}
             </div>
@@ -148,7 +154,7 @@ export default function JobDetailPage({
             Match Results
           </h3>
           <div className="space-y-4">
-            {matches.map((m) => (
+            {matchResults.map((m) => (
               <div key={m.job_id} className="flex items-center gap-4 p-3 rounded-xl bg-bg-surface border border-border-subtle">
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-text-primary">{m.job_title}</p>
@@ -190,10 +196,10 @@ export default function JobDetailPage({
                 <span>✓</span> Matched
               </h4>
               <div className="flex flex-wrap gap-1.5">
-                {gap.matched.map((s) => (
+                {gapMatched.map((s) => (
                   <Badge key={s} variant="success" size="sm">{s}</Badge>
                 ))}
-                {gap.matched.length === 0 && (
+                {gapMatched.length === 0 && (
                   <p className="text-xs text-text-muted">None</p>
                 )}
               </div>
@@ -205,10 +211,10 @@ export default function JobDetailPage({
                 <span>✕</span> Missing
               </h4>
               <div className="flex flex-wrap gap-1.5">
-                {gap.missing.map((s) => (
+                {gapMissing.map((s) => (
                   <Badge key={s} variant="danger" size="sm">{s}</Badge>
                 ))}
-                {gap.missing.length === 0 && (
+                {gapMissing.length === 0 && (
                   <p className="text-xs text-text-muted">None</p>
                 )}
               </div>
@@ -220,10 +226,10 @@ export default function JobDetailPage({
                 <span>ℹ</span> Extra
               </h4>
               <div className="flex flex-wrap gap-1.5">
-                {gap.extra.map((s) => (
+                {gapExtra.map((s) => (
                   <Badge key={s} variant="info" size="sm">{s}</Badge>
                 ))}
-                {gap.extra.length === 0 && (
+                {gapExtra.length === 0 && (
                   <p className="text-xs text-text-muted">None</p>
                 )}
               </div>
