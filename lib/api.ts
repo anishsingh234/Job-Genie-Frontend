@@ -36,7 +36,6 @@ async function apiFetch<T>(
       ...(options.headers as Record<string, string>),
     };
 
-    // Don't set Content-Type for FormData (browser sets boundary automatically)
     if (!(options.body instanceof FormData)) {
       headers["Content-Type"] = "application/json";
     }
@@ -68,11 +67,19 @@ export async function loginUser(email: string, password: string): Promise<AuthRe
   formData.append("username", email);
   formData.append("password", password);
 
-  return apiFetch<AuthResponse>("/api/auth/login", {
+  // Bypass apiFetch to prevent Content-Type being overwritten
+  const res = await fetch(`${BASE_URL}/api/auth/login`, {
     method: "POST",
-    body: formData.toString(),
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: formData.toString(),
   });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: res.statusText }));
+    throw new Error(err.detail || `API Error ${res.status}`);
+  }
+
+  return res.json();
 }
 
 export async function registerUser(
