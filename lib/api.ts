@@ -10,16 +10,6 @@ import type {
   AnswerEvaluation,
   InterviewReport,
 } from "./types";
-import {
-  mockResumes,
-  mockJobs,
-  mockDashboardStats,
-  mockRecentActivity,
-  mockJobMatches,
-  mockSkillGap,
-  mockInterviewSession,
-  mockInterviewReport,
-} from "./mock-data";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://jobgenie-ai-6wmr.onrender.com";
 
@@ -27,8 +17,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://jobgenie-ai-6wmr.on
 
 async function apiFetch<T>(
   path: string,
-  options: RequestInit = {},
-  fallback?: T
+  options: RequestInit = {}
 ): Promise<T> {
   try {
     const headers: Record<string, string> = {
@@ -52,10 +41,6 @@ async function apiFetch<T>(
 
     return (await res.json()) as T;
   } catch (error) {
-    if (fallback !== undefined) {
-      console.warn(`API call failed for ${path}, using mock data`, error);
-      return fallback;
-    }
     throw error;
   }
 }
@@ -110,12 +95,11 @@ export async function uploadResume(file: File): Promise<Resume> {
 }
 
 export async function getResumes(): Promise<Resume[]> {
-  return apiFetch<Resume[]>("/api/resume/", {}, mockResumes);
+  return apiFetch<Resume[]>("/api/resume/");
 }
 
 export async function getResume(id: string): Promise<Resume> {
-  const fallback = mockResumes.find((r) => r.id === id) || mockResumes[0];
-  return apiFetch<Resume>(`/api/resume/${id}`, {}, fallback);
+  return apiFetch<Resume>(`/api/resume/${id}`);
 }
 
 // ── Jobs ────────────────────────────────────────────────────────────
@@ -133,24 +117,19 @@ export async function createJob(job: {
 }
 
 export async function getJobs(): Promise<Job[]> {
-  return apiFetch<Job[]>("/api/jobs/", {}, mockJobs);
+  return apiFetch<Job[]>("/api/jobs/");
 }
 
 export async function getJob(id: string): Promise<Job> {
-  const fallback = mockJobs.find((j) => j.id === id) || mockJobs[0];
-  return apiFetch<Job>(`/api/jobs/${id}`, {}, fallback);
+  return apiFetch<Job>(`/api/jobs/${id}`);
 }
 
 export async function matchResume(resumeId: string): Promise<JobMatchResponse> {
-  return apiFetch<JobMatchResponse>(
-    `/api/jobs/match/${resumeId}`,
-    {},
-    { resume_id: resumeId, matches: mockJobMatches }
-  );
+  return apiFetch<JobMatchResponse>(`/api/jobs/match/${resumeId}`);
 }
 
 export async function getSkillGap(resumeId: string, jobId: string): Promise<SkillGap> {
-  return apiFetch<SkillGap>(`/api/jobs/gap/${resumeId}/${jobId}`, {}, mockSkillGap);
+  return apiFetch<SkillGap>(`/api/jobs/gap/${resumeId}/${jobId}`);
 }
 
 // ── Interview ───────────────────────────────────────────────────────
@@ -158,7 +137,7 @@ export async function getSkillGap(resumeId: string, jobId: string): Promise<Skil
 export async function startInterview(data: {
   resume_id: string;
   job_id: string;
-  num_questions: number;
+  num_questions?: number;
 }): Promise<InterviewSession> {
   return apiFetch<InterviewSession>("/api/interview/start", {
     method: "POST",
@@ -184,29 +163,22 @@ export async function completeInterview(sessionId: string): Promise<InterviewRep
 }
 
 export async function getInterviewReport(sessionId: string): Promise<InterviewReport> {
-  return apiFetch<InterviewReport>(
-    `/api/interview/report/${sessionId}`,
-    {},
-    mockInterviewReport
-  );
+  return apiFetch<InterviewReport>(`/api/interview/report/${sessionId}`);
 }
 
 // ── Dashboard (aggregated) ──────────────────────────────────────────
 
 export async function getDashboardData() {
-  const [resumes, jobs] = await Promise.all([
-    getResumes().catch(() => mockResumes),
-    getJobs().catch(() => mockJobs),
-  ]);
+  const [resumes, jobs] = await Promise.all([getResumes(), getJobs()]);
 
   return {
     stats: {
       total_resumes: resumes.length,
       total_jobs: jobs.length,
-      interviews_completed: mockDashboardStats.interviews_completed,
-      average_score: mockDashboardStats.average_score,
+      interviews_completed: null,
+      average_score: null,
     },
-    recentActivity: mockRecentActivity,
+    recentActivity: [],
     resumes,
     jobs,
   };

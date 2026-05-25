@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState, use } from "react";
+import Link from "next/link";
 import { submitAnswer, completeInterview } from "@/lib/api";
 import { useToast } from "@/lib/hooks/useToast";
-import { mockInterviewSession, mockInterviewReport } from "@/lib/mock-data";
 import type { InterviewSession, InterviewReport, AnswerEvaluation } from "@/lib/types";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -28,22 +28,40 @@ export default function InterviewSessionPage({
   const [submitting, setSubmitting] = useState(false);
   const [completing, setCompleting] = useState(false);
   const [report, setReport] = useState<InterviewReport | null>(null);
+  const [sessionError, setSessionError] = useState("");
 
-  // Load session from sessionStorage or use mock
+  // Load session from sessionStorage
   useEffect(() => {
     const stored = sessionStorage.getItem(`interview_${id}`);
-    if (stored) {
-      try {
-        setSession(JSON.parse(stored));
-      } catch {
-        setSession({ ...mockInterviewSession, session_id: id });
+    if (!stored) {
+      setSessionError("Interview session not found. Start a new interview.");
+      return;
+    }
+
+    try {
+      const parsed = JSON.parse(stored) as InterviewSession;
+      if (!parsed?.questions || parsed.questions.length === 0) {
+        setSessionError("Interview session is missing questions. Start a new interview.");
+        return;
       }
-    } else {
-      setSession({ ...mockInterviewSession, session_id: id });
+      setSession(parsed);
+    } catch {
+      setSessionError("Unable to load interview session. Start a new interview.");
     }
   }, [id]);
 
   if (!session) {
+    if (sessionError) {
+      return (
+        <div className="flex flex-col items-center justify-center py-20 text-center space-y-4">
+          <p className="text-sm text-text-secondary">{sessionError}</p>
+          <Link href="/interview/start">
+            <Button>Start New Interview</Button>
+          </Link>
+        </div>
+      );
+    }
+
     return (
       <div className="flex items-center justify-center py-20">
         <div className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
@@ -81,15 +99,7 @@ export default function InterviewSessionPage({
       setEvaluations((prev) => ({ ...prev, [currentIndex]: evaluation }));
       addToast("success", "Answer submitted!");
     } catch {
-      // Use mock evaluation on failure
-      const mockEval: AnswerEvaluation = {
-        score: Math.floor(Math.random() * 30) + 60,
-        feedback: "Good answer! Consider adding more specific examples.",
-        strengths: ["Clear communication"],
-        improvements: ["Add more detail"],
-      };
-      setEvaluations((prev) => ({ ...prev, [currentIndex]: mockEval }));
-      addToast("info", "Using offline evaluation");
+      addToast("error", "Failed to submit answer");
     } finally {
       setSubmitting(false);
     }
@@ -116,8 +126,7 @@ export default function InterviewSessionPage({
       setReport(rep);
       addToast("success", "Interview completed!");
     } catch {
-      setReport(mockInterviewReport);
-      addToast("info", "Using offline report");
+      addToast("error", "Failed to complete interview");
     } finally {
       setCompleting(false);
     }

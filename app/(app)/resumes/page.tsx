@@ -14,10 +14,15 @@ import { EmptyState } from "@/components/ui/EmptyState";
 export default function ResumesPage() {
   const [resumes, setResumes] = useState<Resume[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     getResumes()
       .then(setResumes)
+      .catch((err: unknown) => {
+        const msg = err instanceof Error ? err.message : "Failed to load resumes";
+        setError(msg);
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -45,6 +50,11 @@ export default function ResumesPage() {
             <CardSkeleton key={i} />
           ))}
         </div>
+      ) : error ? (
+        <EmptyState
+          title="Unable to load resumes"
+          description={error}
+        />
       ) : resumes.length === 0 ? (
         <EmptyState
           icon={

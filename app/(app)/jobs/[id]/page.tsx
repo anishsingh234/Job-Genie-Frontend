@@ -26,6 +26,7 @@ export default function JobDetailPage({
   const [loading, setLoading] = useState(true);
   const [matchLoading, setMatchLoading] = useState(false);
   const [gapLoading, setGapLoading] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     Promise.all([getJob(id), getResumes()])
@@ -33,6 +34,10 @@ export default function JobDetailPage({
         setJob(j);
         setResumes(r);
         if (r.length > 0) setSelectedResume(r[0].id);
+      })
+      .catch((err: unknown) => {
+        const msg = err instanceof Error ? err.message : "Failed to load job details";
+        setError(msg);
       })
       .finally(() => setLoading(false));
   }, [id]);
@@ -74,6 +79,10 @@ export default function JobDetailPage({
         </div>
       </div>
     );
+  }
+
+  if (!loading && error) {
+    return <div className="text-center py-20 text-text-secondary">{error}</div>;
   }
 
   if (!job) {

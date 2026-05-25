@@ -107,8 +107,8 @@ export interface InterviewReport {
 export interface DashboardStats {
   total_resumes: number;
   total_jobs: number;
-  interviews_completed: number;
-  average_score: number;
+  interviews_completed: number | null;
+  average_score: number | null;
 }
 
 export interface ActivityItem {

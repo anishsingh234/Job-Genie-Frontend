@@ -14,10 +14,15 @@ import { EmptyState } from "@/components/ui/EmptyState";
 export default function JobsPage() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     getJobs()
       .then(setJobs)
+      .catch((err: unknown) => {
+        const msg = err instanceof Error ? err.message : "Failed to load jobs";
+        setError(msg);
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -45,6 +50,11 @@ export default function JobsPage() {
             <CardSkeleton key={i} />
           ))}
         </div>
+      ) : error ? (
+        <EmptyState
+          title="Unable to load jobs"
+          description={error}
+        />
       ) : jobs.length === 0 ? (
         <EmptyState
           icon={

@@ -17,9 +17,9 @@ export default function InterviewStartPage() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [resumeId, setResumeId] = useState("");
   const [jobId, setJobId] = useState("");
-  const [numQuestions, setNumQuestions] = useState(5);
   const [loading, setLoading] = useState(true);
   const [starting, setStarting] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     Promise.all([getResumes(), getJobs()])
@@ -28,6 +28,10 @@ export default function InterviewStartPage() {
         setJobs(j);
         if (r.length > 0) setResumeId(r[0].id);
         if (j.length > 0) setJobId(j[0].id);
+      })
+      .catch((err: unknown) => {
+        const msg = err instanceof Error ? err.message : "Failed to load interview data";
+        setError(msg);
       })
       .finally(() => setLoading(false));
   }, []);
@@ -43,7 +47,6 @@ export default function InterviewStartPage() {
       const session = await startInterview({
         resume_id: resumeId,
         job_id: jobId,
-        num_questions: numQuestions,
       });
       addToast("success", "Interview started!");
 
@@ -75,6 +78,10 @@ export default function InterviewStartPage() {
         title="Start Interview"
         subtitle="Practice with AI-powered interview questions tailored to your resume and target job"
       />
+
+      {error && (
+        <p className="text-sm text-danger">{error}</p>
+      )}
 
       <Card>
         <form onSubmit={handleStart} className="space-y-6">
@@ -116,25 +123,6 @@ export default function InterviewStartPage() {
                 No jobs found. <a href="/jobs/new" className="text-primary-light hover:underline">Create one first</a>.
               </p>
             )}
-          </div>
-
-          {/* Number of questions */}
-          <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-text-secondary">
-              Number of Questions: <span className="text-primary-light font-heading font-bold">{numQuestions}</span>
-            </label>
-            <input
-              type="range"
-              min={3}
-              max={15}
-              value={numQuestions}
-              onChange={(e) => setNumQuestions(Number(e.target.value))}
-              className="w-full accent-primary"
-            />
-            <div className="flex justify-between text-xs text-text-muted">
-              <span>3</span>
-              <span>15</span>
-            </div>
           </div>
 
           <Button

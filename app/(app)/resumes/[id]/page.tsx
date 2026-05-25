@@ -17,10 +17,15 @@ export default function ResumeDetailPage({
   const { id } = use(params);
   const [resume, setResume] = useState<Resume | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     getResume(id)
       .then(setResume)
+      .catch((err: unknown) => {
+        const msg = err instanceof Error ? err.message : "Failed to load resume";
+        setError(msg);
+      })
       .finally(() => setLoading(false));
   }, [id]);
 
@@ -31,6 +36,14 @@ export default function ResumeDetailPage({
         <div className="rounded-2xl border border-border-subtle bg-bg-card p-6">
           <Skeleton className="w-full h-40" />
         </div>
+      </div>
+    );
+  }
+
+  if (!loading && error) {
+    return (
+      <div className="text-center py-20 text-text-secondary">
+        {error}
       </div>
     );
   }

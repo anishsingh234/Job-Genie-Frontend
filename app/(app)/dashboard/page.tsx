@@ -14,6 +14,7 @@ export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [activity, setActivity] = useState<ActivityItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     getDashboardData()
@@ -21,8 +22,15 @@ export default function DashboardPage() {
         setStats(data.stats);
         setActivity(data.recentActivity);
       })
+      .catch((err: unknown) => {
+        const msg = err instanceof Error ? err.message : "Failed to load dashboard";
+        setError(msg);
+      })
       .finally(() => setLoading(false));
   }, []);
+
+  const interviewsDisplay = stats?.interviews_completed ?? null;
+  const avgScoreDisplay = stats?.average_score ?? null;
 
   return (
     <div className="space-y-8">
@@ -47,6 +55,9 @@ export default function DashboardPage() {
       </div>
 
       {/* Stats */}
+      {!loading && error && (
+        <p className="text-sm text-danger">{error}</p>
+      )}
       {loading ? (
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {Array.from({ length: 4 }).map((_, i) => (
@@ -81,7 +92,7 @@ export default function DashboardPage() {
           />
           <StatCard
             label="Interviews"
-            value={stats.interviews_completed}
+            value={interviewsDisplay ?? "—"}
             color="amber"
             icon={
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -91,7 +102,7 @@ export default function DashboardPage() {
           />
           <StatCard
             label="Avg Score"
-            value={`${stats.average_score}%`}
+            value={avgScoreDisplay === null ? "—" : `${avgScoreDisplay}%`}
             color="primary"
             icon={
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
